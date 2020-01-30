@@ -1,6 +1,6 @@
 const request = require('supertest')
 const app = require('../app')
-const db = require('../models');
+const db = require('../mongoModels');
 const cleanDb = require('./helpers/cleanDb')
 
 require('./factories/author').factory
@@ -28,7 +28,6 @@ describe('GET /', () => {
     expect(response.statusCode).toBe(200);
   });
 });
-
 describe('POST /author', () => {
 
   let response;
@@ -36,7 +35,6 @@ describe('POST /author', () => {
   beforeAll(async () => {
     data.firstName = 'Seb'
     data.lastName = 'Ceb'
-    console.log(`data = ${JSON.stringify(data)}`)
     response = await request(app).post('/author').send(data).set('Accept', 'application/json');
   })
 
@@ -45,21 +43,18 @@ describe('POST /author', () => {
   });
 
   test('It should return a json with the new author', async () => {
-    console.log(response.body)
     expect(response.body.firstName).toBe(data.firstName);
     expect(response.body.lastName).toBe(data.lastName);
   });
   test('It should create and retrieve a post for the selected author', async () => {
-    const author = await db.Author.findOne({where: {
-      id: response.body.id
-    }})
-    expect(author.id).toBe(response.body.id)
+    const author = await db.Author.findOne({_id: response.body._id
+    })
+    expect(author._id.toString()).toBe(response.body._id)
     expect(author.firstName).toBe(data.firstName)
     expect(author.lastName).toBe(data.lastName)
   });
 
 });
-
 describe('GET /authors', () => {
 
   let response
@@ -73,7 +68,7 @@ describe('GET /authors', () => {
     })
 
     test('It should not retrieve any author in db', async () => {
-      const authors = await db.Author.findAll()
+      const authors = await db.Author.find({})
       expect(authors.length).toBe(0);
     });
     test('It should respond with a 200 status code', async () => {
@@ -91,7 +86,7 @@ describe('GET /authors', () => {
     })
 
     test('It should not retrieve any author in db', async () => {
-      const authorsInDatabase = await db.Author.findAll()
+      const authorsInDatabase = await db.Author.find({})
       expect(authorsInDatabase.length).toBe(5)
     });
     test('It should respond with a 200 status code', async () => {
@@ -101,16 +96,17 @@ describe('GET /authors', () => {
       expect(response.body.length).toBe(5)
       for (i = 0; i < 5 ; i++) {
         const expectedBody = {
-          id: authors[i].id,
+          __v: 0,
+          _id: authors[i]._id.toString(),
           firstName: authors[i].firstName,
           lastName: authors[i].lastName,
+          posts: [],
         }
         expect(response.body).toContainEqual(expectedBody)
       }
     });
   })
 });
-
 describe('POST /post', () => {
 
   let response
@@ -135,7 +131,7 @@ describe('POST /post', () => {
     });
 
     test('It should create and retrieve a post for the selected author', async () => {
-      const postsInDatabase = await db.Post.findAll()
+      const postsInDatabase = await db.Post.find({})
       expect(postsInDatabase.length).toBe(1)
       expect(postsInDatabase[0].title).toBe(post.title)
       expect(postsInDatabase[0].content).toBe(post.content)
@@ -147,7 +143,8 @@ describe('POST /post', () => {
     });
 
     test('The post should belong to the selected authors\' posts', async () => {
-      const posts = await author.getPosts()
+      author = await db.Author.findById(author._id)
+      const posts = await db.Post.find({ _id: { $in: author.posts }})
       expect(posts.length).toBe(1)
       expect(posts[0].title).toBe(post.title)
       expect(posts[0].content).toBe(post.content)

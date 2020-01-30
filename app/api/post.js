@@ -1,9 +1,19 @@
 module.exports = (app, db) => {
     app.post('/post', async (req, res) => {
-      await db.Post.create({
+
+      let author = await db.Author.findById(req.body.AuthorId)
+
+      post = new db.Post({
         title: req.body.title,
-        content: req.body.content,
-        AuthorId: req.body.AuthorId,
-      }).then((result) => res.json(result))
+        content: req.body.content
+      })
+      
+      author.posts.push(post)
+      author.save()
+      await post.save().then((result) => 
+        res.json(result)
+      ).catch(error => res.json(error))
+      
+      
     })
   }

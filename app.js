@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const db = require('./models')
+const dbMongo = require('./mongoModels')
 const postRoutes = require('./app/api/post')
 const authorRoutes = require('./app/api/author')
 
@@ -16,7 +17,7 @@ app.use(express.static('app/public'))
 app.get('/', (req, res) => {
   res.status(200).send('Hello.')
 })
-authorRoutes(app, db)
-postRoutes(app, db)
+authorRoutes(app, dbMongo)
+postRoutes(app, dbMongo)
 
 module.exports = app
