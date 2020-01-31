@@ -144,7 +144,7 @@ describe('POST /post', () => {
 
     test('The post should belong to the selected authors\' posts', async () => {
       author = await db.Author.findById(author._id)
-      const posts = await db.Post.find({ _id: { $in: author.posts }})
+      posts = await db.Author.getPosts(author)
       expect(posts.length).toBe(1)
       expect(posts[0].title).toBe(post.title)
       expect(posts[0].content).toBe(post.content)
