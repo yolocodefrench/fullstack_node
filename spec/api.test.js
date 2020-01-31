@@ -43,13 +43,13 @@ describe('POST /author', () => {
   });
 
   test('It should return a json with the new author', async () => {
-    expect(response.body.firstName).toBe(data.firstName);
-    expect(response.body.lastName).toBe(data.lastName);
+    expect(response.body.data[0].attributes.firstName).toBe(data.firstName);
+    expect(response.body.data[0].attributes.lastName).toBe(data.lastName);
   });
   test('It should create and retrieve a post for the selected author', async () => {
-    const author = await db.Author.findOne({_id: response.body._id
+    const author = await db.Author.findOne({_id: response.body.data[0].id
     })
-    expect(author._id.toString()).toBe(response.body._id)
+    expect(author._id.toString()).toBe(response.body.data[0].id)
     expect(author.firstName).toBe(data.firstName)
     expect(author.lastName).toBe(data.lastName)
   });
@@ -75,7 +75,7 @@ describe('GET /authors', () => {
       expect(response.statusCode).toBe(200);
     });
     test('It should return a json with a void array', async () => {
-      expect(response.body).toStrictEqual([]);
+      expect(response.body).toStrictEqual({data: []});
     });
   })
 
@@ -93,16 +93,23 @@ describe('GET /authors', () => {
       expect(response.statusCode).toBe(200)
     });
     test('It should return a json with a void array', async () => {
-      expect(response.body.length).toBe(5)
+      expect(response.body.data.length).toBe(5)
       for (i = 0; i < 5 ; i++) {
         const expectedBody = {
-          __v: 0,
-          _id: authors[i]._id.toString(),
-          firstName: authors[i].firstName,
-          lastName: authors[i].lastName,
-          posts: [],
+          type: 'author',
+          id: authors[i]._id.toString(),
+          attributes: {
+            'firstName': authors[i].firstName,
+            'lastName': authors[i].lastName
+          },
+          "relationships": {
+            "posts": {
+              "data": [
+              ]
+            }
+          }
         }
-        expect(response.body).toContainEqual(expectedBody)
+        expect(response.body.data).toContainEqual(expectedBody)
       }
     });
   })
@@ -144,7 +151,7 @@ describe('POST /post', () => {
 
     test('The post should belong to the selected authors\' posts', async () => {
       author = await db.Author.findById(author._id)
-      posts = await db.Author.getPosts(author)
+      posts = await author.getPosts()
       expect(posts.length).toBe(1)
       expect(posts[0].title).toBe(post.title)
       expect(posts[0].content).toBe(post.content)

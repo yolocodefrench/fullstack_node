@@ -11,12 +11,13 @@ var AuthorSchema = new Schema({
   ]
 });
 
-AuthorSchema.methods.getPosts = () => {
-  return this.model('Post').find({ _id: { $in: author.posts }});
+AuthorSchema.methods.getPosts = function() {
+  return this.model('Post').find({ _id: { $in: this.posts }});
 };
 
 authorModel = mongoose.model('Author', AuthorSchema);
 
+// Deprecated
 authorModel.getPosts = async (author)=>{
   return await postModel.find({ _id: { $in: author.posts }})
 }
