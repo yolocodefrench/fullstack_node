@@ -7,7 +7,7 @@ module.exports = {
     }
   },
   generatePostObject: function(postObject) { 
-    author =  {
+    post =  {
       type: 'post',
       id: postObject._id.toString(),
       attributes: {
@@ -20,6 +20,6 @@ module.exports = {
         }
       }
     }
-    return author
+    return post
   }
 }

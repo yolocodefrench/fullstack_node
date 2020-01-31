@@ -77,44 +77,62 @@ describe('GET /authors', () => {
       expect(response.statusCode).toBe(200);
     });
     test('It should return a json with a void array', async () => {
-      expect(response.body).toStrictEqual({data: []});
+      expect(response.body).toStrictEqual({data: [], included: []});
     });
   })
 
 
   describe('when there is one or more authors in database', () => {
     beforeAll(async () => {
-      authors = await factory.createMany('author', 5)
+      authors = await factory.createMany('author', 2)
       response = await request(app).get('/authors').set('Accept', 'application/json')
     })
 
     test('It should not retrieve any author in db', async () => {
       const authorsInDatabase = await db.Author.find({})
-      expect(authorsInDatabase.length).toBe(5)
+      expect(authorsInDatabase.length).toBe(2)
     });
     test('It should respond with a 200 status code', async () => {
       expect(response.statusCode).toBe(200)
     });
     test('It should return a json with a void array', async () => {
 
-      expect(response.body.data.length).toBe(5)
-      for (i = 0; i < 5 ; i++) {
-        const expectedBody = {
-          type: 'author',
-          id: authors[i]._id.toString(),
-          attributes: {
-            'firstName': authors[i].firstName,
-            'lastName': authors[i].lastName
+      expect(response.body.data.length).toBe(2)
+      const expectedBody = {
+        data: [
+          {
+            type: 'author',
+            id: authors[0]._id.toString(),
+            attributes: {
+              'firstName': authors[0].firstName,
+              'lastName': authors[0].lastName
+            },
+            "relationships": {
+              "posts": {
+                "data": [
+                ]
+              }
+            }
           },
-          "relationships": {
-            "posts": {
-              "data": [
-              ]
+          {
+            type: 'author',
+            id: authors[1]._id.toString(),
+            attributes: {
+              'firstName': authors[1].firstName,
+              'lastName': authors[1].lastName
+            },
+            "relationships": {
+              "posts": {
+                "data": [
+                ]
+              }
             }
           }
-        }
-        expect(response.body.data).toContainEqual(expectedBody)
+        ],
+        "included": []
       }
+
+      expect(response.body).toEqual(expectedBody)
     });
   })
 });

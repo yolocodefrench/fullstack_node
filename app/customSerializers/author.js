@@ -43,9 +43,19 @@ module.exports = {
   serializeAuthorObjects: async function(authorObjectsArray) {
     let serialized_promises = await authorObjectsArray.map( async e => await authorSerializer.generateAuthorObject(e))
     let serialized_datas = await Promise.all(serialized_promises)
-    console.log(serialized_datas)
+    let posts_promises = await authorObjectsArray.map(async e => {
+      let posts = await e.getPosts()
+      return posts
+    })
+    let serialized_included_posts = []
+    if(posts_promises.length > 0 ){
+      let posts = await Promise.all(posts_promises)
+      posts = posts.reduce((old_value, new_value) => old_value.concat(new_value))
+      serialized_included_posts = posts.map(e=> postSerializer.generatePostObject(e))
+    }
     return {
-      data: serialized_datas
+      data: serialized_datas,
+      included: serialized_included_posts
     }
   }
 }
