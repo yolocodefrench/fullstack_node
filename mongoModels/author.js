@@ -11,6 +11,10 @@ var AuthorSchema = new Schema({
   ]
 });
 
+AuthorSchema.methods.getPosts = () => {
+  return this.model('Post').find({ _id: { $in: author.posts }});
+};
+
 authorModel = mongoose.model('Author', AuthorSchema);
 
 authorModel.getPosts = async (author)=>{
