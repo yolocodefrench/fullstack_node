@@ -28,6 +28,7 @@ describe('GET /', () => {
     expect(response.statusCode).toBe(200);
   });
 });
+
 describe('POST /author', () => {
 
   let response;
@@ -55,6 +56,7 @@ describe('POST /author', () => {
   });
 
 });
+
 describe('GET /authors', () => {
 
   let response
@@ -79,6 +81,7 @@ describe('GET /authors', () => {
     });
   })
 
+
   describe('when there is one or more authors in database', () => {
     beforeAll(async () => {
       authors = await factory.createMany('author', 5)
@@ -93,6 +96,7 @@ describe('GET /authors', () => {
       expect(response.statusCode).toBe(200)
     });
     test('It should return a json with a void array', async () => {
+
       expect(response.body.data.length).toBe(5)
       for (i = 0; i < 5 ; i++) {
         const expectedBody = {
@@ -114,6 +118,7 @@ describe('GET /authors', () => {
     });
   })
 });
+
 describe('POST /post', () => {
 
   let response

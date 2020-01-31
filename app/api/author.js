@@ -8,23 +8,21 @@ module.exports = (app, db) => {
         firstName: req.body.firstName,
         lastName: req.body.lastName,
       })
-      await author.save().then((result) => {
+      await author.save().then(async (result) => {
+        const data = await authorSerializer.generateAuthorObject(result)
         json = {
-          data: [authorSerializer.generateAuthorObject(result)]
+          data: [data]
         } 
-        return res.json(json)
+        return res.json(json)   
       }
       ).catch(error => res.json(error))
     })
   
     app.get('/authors', async (req, res) => {
       await db.Author.find({}
-      ).then((result) => {
-        authorsList = result.map( e => authorSerializer.generateAuthorObject(e))
-        json = {
-          data: authorsList
-        }
-        return res.json(json)
+      ).then(async (result) => {
+        const serializedData = await authorSerializer.serializeAuthorObjects(result)
+        return res.json(serializedData)
       })
     })
   }
